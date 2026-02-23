@@ -6,10 +6,7 @@ st.set_page_config(page_title="Tourism Analytics", layout="wide")
 
 st.title("🌍 Tourism Experience Analytics Dashboard")
 
-# --------------------------------------------------
 # LOAD MODELS
-# --------------------------------------------------
-
 @st.cache_resource
 def load_models():
     models = {}
@@ -25,10 +22,7 @@ def load_models():
 
 models = load_models()
 
-# --------------------------------------------------
 # SIDEBAR NAVIGATION
-# --------------------------------------------------
-
 menu = st.sidebar.selectbox(
     "Select Module",
     [
@@ -40,10 +34,7 @@ menu = st.sidebar.selectbox(
     ]
 )
 
-# --------------------------------------------------
 # HOME
-# --------------------------------------------------
-
 if menu == "Home":
     st.write("""
     ### Welcome to Tourism Experience Analytics
@@ -55,10 +46,7 @@ if menu == "Home":
     - 📍 Content-Based Recommender
     """)
 
-# --------------------------------------------------
 # REGRESSION MODULE
-# --------------------------------------------------
-
 elif menu == "Regression - Rating Prediction":
     
     st.header("⭐ Predict Attraction Rating")
@@ -96,10 +84,7 @@ elif menu == "Regression - Rating Prediction":
         
         st.success(f"Predicted Rating: {round(prediction[0], 2)}")
 
-# --------------------------------------------------
 # CLASSIFICATION MODULE
-# --------------------------------------------------
-
 elif menu == "Classification - Visit Mode":
     
     st.header("👨‍👩‍👧 Predict Visit Mode")
@@ -136,10 +121,7 @@ elif menu == "Classification - Visit Mode":
         
         st.success(f"Predicted Visit Mode: {prediction[0]}")
 
-# --------------------------------------------------
 # COLLABORATIVE FILTERING
-# --------------------------------------------------
-
 elif menu == "Collaborative Recommender":
     
     st.header("🤝 Collaborative Filtering Recommendations")
@@ -151,14 +133,22 @@ elif menu == "Collaborative Recommender":
         try:
             predictions = models["predicted_ratings"].loc[user_id]
             top_items = predictions.sort_values(ascending=False).head(5)
-            st.write(top_items)
+            # Convert to DataFrame
+            top_df = top_items.reset_index()
+            top_df.columns = ["AttractionId", "PredictedRating"]
+            
+            # Merge with attraction names
+            results = top_df.merge(
+                models["content_df"][["AttractionId", "Attraction"]],
+                on="AttractionId",
+                how="left"
+            )
+            
+            st.dataframe(results[["Attraction", "PredictedRating"]])
         except:
             st.error("User ID not found.")
 
-# --------------------------------------------------
 # CONTENT-BASED FILTERING
-# --------------------------------------------------
-
 elif menu == "Content-Based Recommender":
     
     st.header("📍 Similar Attraction Recommendations")
